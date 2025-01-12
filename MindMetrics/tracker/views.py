@@ -85,6 +85,7 @@ def data_processor(request):
     if request.method == 'POST':
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
+        date_type = request.POST.get('typetime')
         
         if start_date and end_date:
             mood_data = MoodTracker.objects.filter(user=request.user, created_at__range=[start_date, end_date])
@@ -102,6 +103,16 @@ def data_processor(request):
             "nutrition": [entry.nutrition for entry in mood_data],
             "date": [entry.created_at for entry in mood_data],
         }
+
+        if date_type == "Year":
+            user_data["date"] = [entry.created_at.year for entry in mood_data]
+        elif date_type == "Month":
+            user_data["date"] = [entry.created_at.month for entry in mood_data]
+        elif date_type == "Day":
+            user_data["date"] = [entry.created_at.day for entry in mood_data]
+        else:
+            user_data["date"] = [entry.created_at for entry in mood_data]
+        
         user_df = pd.DataFrame(user_data)
             
         user_df_long = pd.melt(user_df, id_vars=["date"], 

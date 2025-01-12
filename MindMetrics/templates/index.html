@@ -6,6 +6,10 @@
     <div id="main_page">
         <h1>Welcome to MindMetrics!</h1>
         <p>This app will help you keep track of your mental health.</p>
+        {% if not is_logged_in %}
         <p>Please log in to your user account or sign up if you are not registered.</p>
+        {% else %}
+        <p>Welcome {{ username }}</p>
+        {% endif %}
     </div>
 {% endblock %}
