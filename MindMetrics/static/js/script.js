@@ -24,16 +24,16 @@ function redirectHome() {
 
 function updateDateVisibility() {
     const typetime = document.getElementById('typetime').value
-    const yearlyContent = document.getElementById('yearly-content');
-    const monthlyContent = document.getElementById('monthly-content');
-    const dailyContent = document.getElementById('daily-content');
+    const yearlyContent = document.getElementById('year-dates');
+    const monthlyContent = document.getElementById('monthly-dates');
+    const dailyContent = document.getElementById('daily-dates');
 
-    // Hide all content divs initially
+    console.log("Typetime:",typetime)
+
     yearlyContent.style.display = 'none';
     monthlyContent.style.display = 'none';
     dailyContent.style.display = 'none';
 
-    // Show the relevant content div based on the selected value
     if (typetime === 'Year') {
         yearlyContent.style.display = 'block';
     } else if (typetime === 'Month') {

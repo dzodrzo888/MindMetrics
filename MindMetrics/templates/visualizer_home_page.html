@@ -7,14 +7,32 @@
 <h1>Visulize your metrics!</h1>
 <form method="POST" action="{% url 'metrics_visualization' %}">
     {% csrf_token %}
-    <label for="start_date">Start Date:</label>
-    <input type="date" id="start_date" name="start_date">
-    
-    <label for="end_date">End Date:</label>
-    <input type="date" id="end_date" name="end_date">
+    <div id="year-dates" style="display: none;">
+        <h2>Choose your year span:</h2>
+        <input type="number" placeholder="YYYY" min="1999" max="2090" id="start_year" name="start_year">
+        <input type="number" placeholder="YYYY" min="1999" max="2090" id="end_year" name="end_year">
+    </div>
+
+    <div id="monthly-dates" style="display: none;">
+        <h2>Choose your year:</h2>
+        <input type="number" placeholder="YYYY" min="1999" max="2090" id="start_year" name="month_year">
+        <h2>Choose your month span:</h2>
+        <input type="number" placeholder="MM" min="1" max="12" id="start_month" name="start_month">
+        <input type="number" placeholder="MM" min="1" max="12" id="end_month" name="end_month">
+    </div>
+
+    <div id="daily-dates" style="display: none;">
+        <h2>Choose your year:</h2>
+        <input type="number" placeholder="YYYY" min="1999" max="2090" id="start_year" name="day_year">
+        <h2>Choose your month:</h2>
+        <input type="number" placeholder="MM" min="1" max="12" id="start_month" name="day_month">
+        <h2>Choose your day span:</h2>
+        <input type="number" placeholder="DD" min="1" max="31" id="start_day" name="start_day">
+        <input type="number" placeholder="DD" min="1" max="31" id="end_day" name="end_day">
+    </div>
 
     <label for="typetime">Visulize by:</label>
-    <select name="typetime" id="typetime" onchange="">
+    <select name="typetime" id="typetime" onchange="updateDateVisibility()">
         <option value=""></option>
         <option value="Year">Year</option>
         <option value="Month">Month</option>

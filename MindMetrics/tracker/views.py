@@ -9,6 +9,7 @@ from datetime import datetime
 import pandas as pd
 import seaborn as sns
 import plotly.express as px
+from datetime import datetime, timedelta
 
 
 def home_view(request):
@@ -83,14 +84,14 @@ def visulize_view(request):
 def data_processor(request):
     user_df_long = None
     if request.method == 'POST':
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        date_type = request.POST.get('typetime')
         
-        if start_date and end_date:
-            mood_data = MoodTracker.objects.filter(user=request.user, created_at__range=[start_date, end_date])
-        else:
-            mood_data = MoodTracker.objects.filter(user=request.user)
+        post_data = request.POST
+
+        dict = convert_to_datetime(post_data)
+
+        print(dict)
+
+        mood_data = MoodTracker.objects.filter(user=request.user)
 
         user_data = {
             "stress": [entry.stress for entry in mood_data],
@@ -103,15 +104,6 @@ def data_processor(request):
             "nutrition": [entry.nutrition for entry in mood_data],
             "date": [entry.created_at for entry in mood_data],
         }
-
-        if date_type == "Year":
-            user_data["date"] = [entry.created_at.year for entry in mood_data]
-        elif date_type == "Month":
-            user_data["date"] = [entry.created_at.month for entry in mood_data]
-        elif date_type == "Day":
-            user_data["date"] = [entry.created_at.day for entry in mood_data]
-        else:
-            user_data["date"] = [entry.created_at for entry in mood_data]
         
         user_df = pd.DataFrame(user_data)
             
@@ -157,3 +149,53 @@ def data_visualizer(request):
 
         return render(request, "interactive_plot.html", context=context)
     return redirect('data_visulize')
+
+
+def convert_to_datetime(data):
+    """
+    Convert the specified year, month, and day into a datetime object.
+    The function handles different levels of granularity (year, month, day).
+    
+    Args:
+        data (dict): A dictionary containing the keys 'typetime', 'start_year', 'end_year',
+                     'month_year', 'start_month', 'end_month', 'day_year', 'day_month',
+                     'start_day', and 'end_day'.
+    
+    Returns:
+        dict: A dictionary with 'start_date' and 'end_date' as datetime objects.
+    """
+    typetime = data.get('typetime')
+    
+    start_date = None  
+    end_date = None
+
+    if typetime == 'Year':
+        start_year = int(data.get('start_year'))
+        end_year = int(data.get('end_year'))
+        start_date = datetime(start_year, 1, 1)
+        end_date = datetime(end_year, 12, 31, 23, 59, 59)
+    
+    elif typetime == 'Month':
+        year = int(data.get('month_year'))
+        start_month = int(data.get('start_month'))
+        end_month = int(data.get('end_month'))
+        start_date = datetime(year, start_month, 1)
+        end_date = datetime(year, end_month, 1, 23, 59, 59)
+        # Adjust end_date to the last day of the end_month
+        if end_month == 12:
+            end_date = end_date.replace(month=12, day=31)
+        else:
+            end_date = end_date.replace(month=end_month + 1, day=1) - timedelta(days=1)
+    
+    elif typetime == 'Day':
+        year = int(data.get('day_year'))
+        month = int(data.get('day_month'))
+        start_day = int(data.get('start_day'))
+        end_day = int(data.get('end_day'))
+        start_date = datetime(year, month, start_day)
+        end_date = datetime(year, month, end_day, 23, 59, 59)
+    
+    else:
+        raise ValueError("Invalid 'typetime' value")
+    
+    return {'start_date': start_date, 'end_date': end_date}
