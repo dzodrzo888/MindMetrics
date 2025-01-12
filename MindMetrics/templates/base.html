@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>MindMetrics</title>
+    <script src="{% static 'js/script.js' %}"></script>
+</head>
+<body>
+    <div id="main-layout" class="container">
+        {% if is_logged_in %}
+        <div class="content">
+            <!---to make the href work you need to put it around a anchor <a>-->
+            <button onclick="redirecrtToQuesstionaire()">Questionnaires</button>
+            <button onclick="redirectToVisulize()">Data vizualizations</button>
+            <button>Time-line</button>
+            <button onclick="redirectHome()" href="{%url 'home' %}">Main-page</button>
+        </div>
+        {% endif %}
+        <div class="button-container">
+        {% if not is_logged_in %}
+            <button type="submit" onclick="redirectToLogin()" href="{% url 'login' %}">Log In</button>
+            <button type="submit" onclick="redirectToRegister()" href="{% url 'register' %}">Sign Up</button> 
+        {% else %}
+            <p>Hey, {{ username }} hope you are having a good day :).</p>
+            <button onclick="redirectToLogout()" href="{% url 'logout' %}">Logout</button>
+        {% endif %}
+        </div>
+    </div>
+    {% block content %}
+    
+    {% endblock %}
+</body>
+</html>
