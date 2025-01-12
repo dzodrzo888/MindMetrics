@@ -73,29 +73,40 @@ def quesstionaire_submit(request):
     return redirect('quesstionaire')  
 
 def visulize_view(request):
-    render(request, 'visualizer_home_page.html') 
+    context = {
+        'is_logged_in': request.user.is_authenticated,
+        'username': request.user.username if request.user.is_authenticated else None
+    }
+    return render(request, 'visualizer_home_page.html', context=context) 
 
 @login_required
 def data_processor(request):
-    mood_data = MoodTracker.objects.filter(user=request.user)
-    user_data = {
-        "stress": [entry.stress for entry in mood_data],
-        "anxiety": [entry.anxiety for entry in mood_data],
-        "sleep": [entry.sleep for entry in mood_data],
-        "mood": [entry.mood for entry in mood_data],
-        "physical": [entry.physical for entry in mood_data],
-        "water": [entry.water for entry in mood_data],
-        "meal": [entry.meal for entry in mood_data],
-        "nutrition": [entry.nutrition for entry in mood_data],
-        "hour": [entry.created_at.hour for entry in mood_data],
-        "day": [entry.created_at.day for entry in mood_data],
-        "month": [entry.created_at.month for entry in mood_data],
-        "year": [entry.created_at.year for entry in mood_data],
-    }
-    user_df = pd.DataFrame(user_data)
+    user_df_long = None
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
         
-    user_df_long = pd.melt(user_df, id_vars=["day", "month", "year", "hour"], 
-                           var_name="Metrics", value_name="Score")
+        if start_date and end_date:
+            mood_data = MoodTracker.objects.filter(user=request.user, created_at__range=[start_date, end_date])
+        else:
+            mood_data = MoodTracker.objects.filter(user=request.user)
+
+        user_data = {
+            "stress": [entry.stress for entry in mood_data],
+            "anxiety": [entry.anxiety for entry in mood_data],
+            "sleep": [entry.sleep for entry in mood_data],
+            "mood": [entry.mood for entry in mood_data],
+            "physical": [entry.physical for entry in mood_data],
+            "water": [entry.water for entry in mood_data],
+            "meal": [entry.meal for entry in mood_data],
+            "nutrition": [entry.nutrition for entry in mood_data],
+            "date": [entry.created_at for entry in mood_data],
+        }
+        user_df = pd.DataFrame(user_data)
+            
+        user_df_long = pd.melt(user_df, id_vars=["date"], 
+                            var_name="Metrics", value_name="Score")
+        messages.success(request, "Data returned")
 
     return user_df_long
 
@@ -104,27 +115,34 @@ def data_visualizer(request):
     
     user_df_long = data_processor(request)
 
-    fig = px.line(
-        user_df_long,
-        x="day",
-        y="Score",
-        color="Metrics",
-        line_group="Metrics",
-        markers=True,
-        title="User Metrics Over Time",
-        labels={"day": "Date", "Score": "Score", "Metrics": "Metrics"},
-    )
+    if user_df_long is not None and not user_df_long.empty:
 
-    fig.update_layout(
-        xaxis_title="Day",
-        yaxis_title="Score",
-        legend_title="Metrics",
-        template="plotly_white",
-        xaxis=dict(tickmode="array", tickvals=user_df_long["day"].unique()),
-    )
+        fig = px.line(
+            user_df_long,
+            x="date",
+            y="Score",
+            color="Metrics",
+            line_group="Metrics",
+            markers=True,
+            title="User Metrics Over Time",
+            labels={"date": "Date", "Score": "Score", "Metrics": "Metrics"},
+        )
 
-    # Convert the Plotly figure to HTML
-    plot_html = fig.to_html(full_html=False)
+        fig.update_layout(
+            xaxis_title="date",
+            yaxis_title="Score",
+            legend_title="Metrics",
+            template="plotly_white",
+            xaxis=dict(tickmode="array", tickvals=user_df_long["date"].unique()),
+        )
 
-    # Pass the HTML to your template
-    return render(request, "interactive_plot.html", {"plot_html": plot_html})
+        plot_html = fig.to_html(full_html=False)
+
+        context = {
+            'is_logged_in': request.user.is_authenticated,
+            'username': request.user.username if request.user.is_authenticated else None,
+            'plot_html': plot_html,
+        }
+
+        return render(request, "interactive_plot.html", context=context)
+    return redirect('data_visulize')

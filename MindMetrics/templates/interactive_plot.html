@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Interactive Plot - MindMetrics{% endblock %}
+
+{% block content %}
+<h1>Interactive Plot</h1>
+<div>
+    {{ plot_html|safe }}
+</div>
+{% endblock %}

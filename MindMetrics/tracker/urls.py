@@ -9,4 +9,5 @@ urlpatterns = [
     path('quesstionaire/', views.quesstionaire_view, name='quesstionaire'),
     path('quesstionaire_submit/', views.quesstionaire_submit, name='quesstionaire_submit'),
     path('data_visulize/', views.visulize_view, name='data_visulize'),
+    path('metrics_visualization/', views.data_visualizer, name='metrics_visualization'),
 ]

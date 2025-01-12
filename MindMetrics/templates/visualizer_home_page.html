@@ -5,6 +5,21 @@
 {% block content %}
 
 <h1>Visulize your metrics!</h1>
+<form method="POST" action="{% url 'metrics_visualization' %}">
+    {% csrf_token %}
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date">
+    
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date">
 
+    <label for="typetime">Visulize by:</label>
+    <select name="typetime" id="typetime">
+        <option value="Year">Year</option>
+        <option value="Month">Month</option>
+        <option  value="Day">Day</option>
+    </select>
+    <button type="submite">Submit</button>
+</form>
 
 {% endblock %}
